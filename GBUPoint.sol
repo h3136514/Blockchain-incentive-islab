@@ -1,4 +1,4 @@
- // SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: GPL-3.0
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 pragma solidity >= 0.7.0 < 0.9.0;
 import "./GBUToken.sol";
@@ -12,7 +12,30 @@ contract GBUPoint is ERC20 {
     address public tokenAddress = 0x38cB7800C3Fddb8dda074C1c650A155154924C73; //토큰 컨트렉트 주소 
     GBUToken public token;
     uint256 public HowMuchToken;
+    address[] public useraddress; 
     
+     struct NftData {
+        address user;
+        uint get_point;
+    }
+//모든 point확인(관리자 전용)
+    function getPoints_admin() view public returns (NftData[] memory) {
+        uint256 balanceLength =useraddress.length;    //유저 수  가져오기
+        //require(balanceLength != 0, "Owner did not have token.");   //토큰을 하나도 안가지고 있을때
+
+        NftData[] memory nftData = new NftData[](balanceLength);
+
+        //가지고 있는 토큰만큼 반복
+        for(uint256 i = 0; i < balanceLength; i++) {
+            address user =useraddress[i];
+            uint get_point= point_balances[user];
+    
+            nftData[i] = NftData(user,  get_point);
+        }
+
+        return nftData;
+
+    }
 
     mapping (address => uint) private point_balances; 
     
@@ -71,6 +94,7 @@ contract GBUPoint is ERC20 {
         _transfer(admin, _to, _amount);
        point_balances[admin] -= _amount;
         point_balances[_to] += _amount;
+        useraddress.push( _to);
         return true;
     }
 

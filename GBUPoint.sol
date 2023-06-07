@@ -11,7 +11,7 @@ contract GBUPoint is ERC20 {
     address public admin; //관리자 변수 
     address public tokenAddress = 0x38cB7800C3Fddb8dda074C1c650A155154924C73; //토큰 컨트렉트 주소 
     GBUToken public token;
-    
+    uint256 public HowMuchToken;
     
 
     mapping (address => uint) private point_balances; 
@@ -58,6 +58,13 @@ contract GBUPoint is ERC20 {
      function balanceOfAdmin() public view returns(uint) {
         return point_balances[admin];
     }
+
+
+    //사용자 GBU Point 잔액 조회 기능 
+     function balanceOfUser() public view returns(uint) {
+        return point_balances[msg.sender];
+    }
+
 
      //GBU Point 전송 기능
       function transferPoint(address _to, uint256 _amount) public virtual  returns (bool) {
@@ -117,25 +124,37 @@ contract GBUPoint is ERC20 {
     /* 승인된 경우 사용자들은 포인트를 얻게되고 그 포인트를 모은다. 
     어느정도 모이면 토큰으로 전환할 수 있다. (100 Point => 1 Token)*/
     
-    event PointsExchanged(address user, uint256 amount); // PointsExchanged 이벤트 선언
+    event PointsExchanged(address user, uint256 amount);
 
- 
-  function exchangePointsForTokens(uint256 _amount) public payable{
-    //require(point_balances[msg.sender] >= 100, "Your point balance should be at least 100 points.");
-    require(point_balances[msg.sender] >= _amount, "Insufficient point balance.");
-    require(_amount >= 100, "The amount should be at least 100 points.");
-    
-    uint256 tokenAmount = _amount / 100; // 100 Point당 1 Token 교환 비율
+  function exchangePointsForTokens(uint256 _amount) public {
+        require(point_balances[msg.sender] >= _amount, "Insufficient point balance.");
+      
+        // 100 Point당 1 Token 교환 비율 계산 (해결함)
+        HowMuchToken = _amount / 100; 
 
-    point_balances[msg.sender] -= _amount;
-    token.transfer(msg.sender, tokenAmount);
+        // 입력된 _amount 만큼 사용자의 발란스에서 차감 (해결함)
+        point_balances[msg.sender] -= _amount;
+   
 
-    emit PointsExchanged(msg.sender, tokenAmount);
-}
+        //계산된 HowMuchToken 만큼 사용자의 토큰 지갑에 입금
+       // 토큰을 사용자에게 전송 (여기서 문제 발생 !!!) 
+       
+       token.TestTransfer(msg.sender, HowMuchToken);
+    }
+
+
    // 관리자의 토큰 잔액 조회
     function Token_Balance_Of_Admin() public view returns (uint256) {
     return token.balanceOf(admin);
     }
+
+
+    
+   // 사용자의 토큰 잔액 조회
+    function Token_Balance_Of_User() public view returns (uint256) {
+        return token.balanceOf(msg.sender);
+    }
+
 
 
 }

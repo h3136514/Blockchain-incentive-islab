@@ -9,16 +9,28 @@ contract GBUPoint is ERC20 {
     string private pointSymbol = "Point";
     uint private pointTotalSupply;
     address public admin; //관리자 변수 
-    address public tokenAddress = 0x38cB7800C3Fddb8dda074C1c650A155154924C73; //토큰 컨트렉트 주소 
+    address public tokenAddress; //토큰 컨트렉트 주소 
     GBUToken public token;
-    uint256 public HowMuchToken;
     address[] public useraddress; 
     
      struct NftData {
         address user;
         uint get_point;
     }
-//모든 point확인(관리자 전용)
+
+
+    // 사용자의 요청 정보를 저장하기 위한 구조체
+    struct Request {
+    address requester;
+    bool approved;
+    }
+
+    //Request 구조체를 사용하여 요청 정보를 저장하기 위한 매핑 
+    mapping(uint256 => Request) public requests;
+    uint256 public requestId;
+    
+    
+    //모든 point확인(관리자 전용)
     function getPoints_admin() view public returns (NftData[] memory) {
         uint256 balanceLength =useraddress.length;    //유저 수  가져오기
         //require(balanceLength != 0, "Owner did not have token.");   //토큰을 하나도 안가지고 있을때
@@ -77,16 +89,6 @@ contract GBUPoint is ERC20 {
         return 0;
     }
 
-    //관리자 GBU Point 잔액 조회 기능 
-     function balanceOfAdmin() public view returns(uint) {
-        return point_balances[admin];
-    }
-
-
-    //사용자 GBU Point 잔액 조회 기능 
-     function balanceOfUser() public view returns(uint) {
-        return point_balances[msg.sender];
-    }
 
 
      //GBU Point 전송 기능
@@ -110,16 +112,24 @@ contract GBUPoint is ERC20 {
  
     // 사용자는 포인트 요청하기 페이지에서 사용자의 지갑 주소를 입력하면 된다 --> 요청 완료  
     function pointRequest(address _addr) public {
-        require(_addr != address(0), "Invalid address"); // 주소 유효성 검사
+    require(_addr != address(0), "Invalid address"); // 주소 유효성 검사
 
-        requester = _addr;
-        requestStatus = RequestStatus.Requested;
-    }
+    // 요청 정보 저장
+    requests[requestId] = Request(_addr,false);
+    requestId++;
+
+    requester = _addr;
+    requestStatus = RequestStatus.Requested;
+
+    emit RequestSubmitted(requester);
+}
 
     // 포인트 요청자 정보 확인하는 기능 
-    function getRequesterInfo() public view returns(address,RequestStatus){
-        return (requester,requestStatus) ; //튜플 사용해서 반환 값 2개 이상 가능 
-    }
+   function getRequestInfo(uint256 _requestId) public view returns (Request memory) {
+    require(_requestId < requestId, "Invalid requestId"); // 요청 ID 유효성 검사
+
+    return requests[_requestId];
+}
 
 
     // 사용자 pointRequest를 관리자가 승인하거나 거절한다. 
@@ -146,25 +156,33 @@ contract GBUPoint is ERC20 {
   
      
     /* 승인된 경우 사용자들은 포인트를 얻게되고 그 포인트를 모은다. 
-    어느정도 모이면 토큰으로 전환할 수 있다. (100 Point => 1 Token)*/
+    어느정도 모이면 토큰으로 전환할 수 있다. (1Point => Point * 10 Token)*/
     
     event PointsExchanged(address user, uint256 amount);
 
-  function exchangePointsForTokens(uint256 _amount) public {
+    uint256 public exchangeRate;
+    function exchangePointsForTokens(uint256 _amount) public {
         require(point_balances[msg.sender] >= _amount, "Insufficient point balance.");
-      
-        // 100 Point당 1 Token 교환 비율 계산 (해결함)
-        HowMuchToken = _amount / 100; 
+        // 포인트 * 10 환율
+        uint256 howMuchToken = _amount * 10;
+        exchangeRate = howMuchToken;
 
         // 입력된 _amount 만큼 사용자의 발란스에서 차감 (해결함)
         point_balances[msg.sender] -= _amount;
+
+        // 토큰 전송
+        token.GBU_Token_Transfer(msg.sender, howMuchToken);      
+        
+    }
    
 
-        //계산된 HowMuchToken 만큼 사용자의 토큰 지갑에 입금
-       // 토큰을 사용자에게 전송 (여기서 문제 발생 !!!) 
-       
-       token.TestTransfer(msg.sender, HowMuchToken);
+    function getExchangeRate() public view returns (uint256) {
+        return exchangeRate;
     }
+
+  
+
+
 
 
    // 관리자의 토큰 잔액 조회

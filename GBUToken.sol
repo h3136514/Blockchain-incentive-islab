@@ -7,9 +7,10 @@ contract GBUToken is ERC20 {
     string private Name = "GBU";
     string private Symbol = "Token";
     uint private TokenTotalSupply = 0;
-    address public admin;
-    mapping (address => uint) private token_balances; 
-
+    address public admin; //관리자 변수 
+    
+    mapping (address => uint) private Tokenbalance;  //토큰 양
+    
     modifier onlyAdmin {
         require(msg.sender == admin, "Only admin can call this function.");
         _;
@@ -29,19 +30,23 @@ contract GBUToken is ERC20 {
         emit Transfer(address(0), _addr, _amount);
     }
 
-    // 관리자의 토큰 잔액 조회
-    function Token_Balance_Of_Admin() public view returns (uint256) {
-        return balanceOf(admin);
-    }
 
+    //토큰 잔액
+    function balanceOfToken(address account) public view returns (uint256) {
 
-    // 토큰 전송 메소드 
-    function GBU_Token_Transfer(address _to, uint256 _amount) public virtual returns (bool) {
-        _transfer(admin, _to, _amount);
-        token_balances[admin] -= _amount;
-        token_balances[_to] += _amount;
+        return Tokenbalance[account];
+        }
+
+    
+    //토큰 전송
+    function transferToken(address to, uint256 amount) public returns (bool) {
+        require(amount > 0, "Invalid amount");
+        address owner = _msgSender();
+        _transfer(owner, to, amount);
+        Tokenbalance[admin] -= amount;   //관리자의 토큰양 감소
+        Tokenbalance[to] += amount;
         return true;
-    }
+    }   
 
- 
+
 }

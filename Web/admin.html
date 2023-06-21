@@ -25,6 +25,8 @@
     <script>
         var mintingEvent;  //스마트 컨트랙트 확인
         var ID=0; //tokenID
+        var pointRequestIndex = 0; // 포인트 요청 내역의 인덱스
+        var recipientAddress;
 
         //전송할 tokenID가져오기
         async function saveid(id){
@@ -99,19 +101,20 @@ $('#btn_setApprovalForAll').click(async function () {
 		var receiptObj = await mintingEvent.methods.setApprovalForAll(contractAddress, true).send({ from: accounts[0] });
 		console.log(receiptObj);
 		location.reload();
+
 	});
     
 
 
 //-------------------------------
-const userListArray = await mintingEvent.methods.getPoints_admin().call();
-for (i = 0; i < userListArray.length; i++) {
+const tempnftListArray = await mintingEvent.methods.getPoints_admin().call();
+for (i = 0; i < tempnftListArray.length; i++) {
     var same = false;
-    _user = userListArray[i].user;
-    _point = userListArray[i].get_point;
+    _user = tempnftListArray[i].user;
+    _point = tempnftListArray[i].get_point;
         //중복 판별
         for (j = 0; j<i; j++){
-            if(userListArray[j].user ==userListArray[i].user)
+            if(tempnftListArray[j].user ==tempnftListArray[i].user)
                 same= true; 
              }
      if(same)        
@@ -129,8 +132,10 @@ for (i = 0; i < userListArray.length; i++) {
 
 }
 
+
+    
 //관리자 Point 가져오기     
-const admin_point = await mintingEvent.methods.balanceOfAdmin().call();
+const admin_point = await mintingEvent.methods.Point_Balance_Of_Admin().call();
 var html = '';
 html +=admin_point
 $("#total_point").append(html);
@@ -142,7 +147,38 @@ html +=admin_Token
 $("#total_token").append(html);
 
 
+ // Display existing point request records
+ async function displayExistingPointRequestRecords() {
+                // Get the total number of point request records
+                const totalRecords = await mintingEvent.methods.getpointRequestCount().call();
 
+                for (let i = 0; i < totalRecords; i++) {
+                    const result = await mintingEvent.methods.getPointRequest(i).call();
+                    console.log("포인트 요청 내역: ", result);
+
+                    // 구조체에 저장된 주소를 가져와서 테이블에 추가하는 코드 작성
+
+                    var html = '<tr>';
+                    html += '<td>' + result[0] + '</td>'; // 인덱스 
+                    recipientAddress = result[1]; // 주소를 recipientAddress 변수에 저장
+                    html += '<td>' + result[1] + '</td>'; // 사용자 주소
+                    html += `<td><button class="btn btn-success" onclick="approvePointRequest(${result[0]})">승인</button></td>`;
+                    html += `<td><button class="btn btn-danger" onclick="rejectPointRequest(${result[0]})">거절</button></td>`;
+                    html += '<td>' + (result[2] ? '요청' : '요청 완료') + '</td>'; // 상태
+                    html += '</tr>';
+                    
+        
+        
+                    $("#Point_Request_Record_Table").append(html);
+                    pointRequestIndex++; // 포인트 요청 후 인덱스 증가
+                }
+            }
+
+            displayExistingPointRequestRecords();
+
+
+
+            
 });
 //Point 발급하기
 async function Point_Make(){
@@ -158,15 +194,27 @@ async function Point_Make(){
 				//$("#resultbox").text("처리결과 \n" + error);
 			}
         }
-    }
+}
 
+async function approvePointRequest(index) {
+ try{
+    // 포인트를 받을 대상의 주소와 전송할 포인트 양을 설정합니다
+    const pointAmount = 2; // 전송할 포인트 양으로 대체해야 합니다
 
+    // 스마트 컨트랙트의 transfer() 함수를 호출하여 포인트를 전송합니다
+    const transferResult = await mintingEvent.methods.transfer(recipientAddress, pointAmount).send({ from: accounts[0] });
+    console.log(`포인트 전송 결과:`, transferResult);
 
-        
+     
+ } catch(error){
+    console.error(`포인트 전송 중 오류 발생:`, error);
+ }
+}
+    
     </script>
 </head>
 
-<title>NFT</title>
+<title>[관리자] GBU Point & Token</title>
 </head>
 
 <body>
@@ -178,7 +226,7 @@ async function Point_Make(){
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
             <div class="container">
-                <a class="navbar-brand" href="index.html" >Point</a>
+                <a class="navbar-brand" href="index.html" >[Admin] GBU Point & Token</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -186,12 +234,6 @@ async function Point_Make(){
                 </button>
 
               
-
-
-
-
-
-
                     <div class="d-flex">
                         <button type="button" class="btn btn-warning col-md-6" id="btn_setApprovalForAll">거래상태</button>
                         &nbsp;&nbsp;
@@ -240,18 +282,38 @@ async function Point_Make(){
                     <tr>
                         <th>User</th>
                         <th>Point</th>
-                       
-         
                     </tr>
                 </thead>
                 <tbody id="dynamicTbody"></tbody>
 
             </table>
+        </div>
+
+
+
+        <p><h3>[관리자용] 포인트 요청 내역</h3></p>
+        <hr />
+        <div class="box-body" style="min-height:500px">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>Account</th>
+                        <th>승인</th>
+                        <th>거절</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="Point_Request_Record_Table"></tbody>
+
+            </table>
 
         </div>
+        
     </div>
   
 
+  
 
    
 

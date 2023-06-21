@@ -21,7 +21,6 @@ contract GBUPoint is ERC20 {
         uint get_point;
     }
 
-
     // 사용자의 요청 정보를 저장하기 위한 구조체
     struct Request {
     address requester;
@@ -33,7 +32,7 @@ contract GBUPoint is ERC20 {
     uint256 public requestId;
     
     
-   //모든 포인트 확인(관리자 전용)
+  //모든 포인트 확인(관리자 전용)
     function getPoints_admin() view public returns (UserData[] memory) {
         uint256 balanceLength =useraddress.length;    //유저 수  가져오기
         //require(balanceLength != 0, "Owner did not have token.");   //토큰을 하나도 안가지고 있을때
@@ -51,6 +50,7 @@ contract GBUPoint is ERC20 {
         return userData;
 
     }
+
 
     mapping (address => uint) private point_balances; 
     
@@ -120,7 +120,8 @@ contract GBUPoint is ERC20 {
     struct Record_User_Point_Request {
         uint index; // 인덱스
         address point_requester; // 주소
-        bool status; // 상태 
+        bool status; // 요청 상태 
+        
     }
 
     Record_User_Point_Request[] public pointRequests;
@@ -133,12 +134,13 @@ contract GBUPoint is ERC20 {
         request.index = pointRequestCount;
         request.point_requester = _addr;
         request.status = false;
-
         pointRequests.push(request);
         pointRequestCount++;
 
         return _addr;
     }
+
+
 
     // 사용자 포인트 요청 확인용 
     function getPointRequest(uint index) public view returns (uint256, address, bool){
@@ -149,8 +151,6 @@ contract GBUPoint is ERC20 {
     function getpointRequestCount() public view returns (uint256){
         return pointRequestCount;
     }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -193,27 +193,58 @@ contract GBUPoint is ERC20 {
    ////////////////////////////////////////////////////////////////////////////////////////////
    // [ 포인트 -> 토큰 전환 ] 
 
-    uint256 public exchangeRate;
     uint256 public HowMuchToken;
+    uint256 public getResult;
+
+
+    // 사용자의 포인트 요청 기록 구조체 
+    struct Record_User_Token_Exchange {
+        uint t_index; // 인덱스
+        uint t_howmuch; // 전환된 토큰양
+    }
+
+     Record_User_Token_Exchange[] public tokenExchanges;
+     uint public tokenExchangeCount = 0;
+
+
     function exchangePointsForTokens(uint256 _amount) public {
-        require(point_balances[msg.sender] >= _amount, "Insufficient point balance.");
-
-        // 사용자의 포인트 - 교환되는 양 
-        point_balances[msg.sender] -= _amount;
-
+    
 
         // 포인트 * 10 환율
         HowMuchToken = _amount * 10; // 계산까지는 잘 됨 (해결)
-        exchangeRate = HowMuchToken;
+        getResult = HowMuchToken;
+
+
+        Record_User_Token_Exchange memory exchange;
+        exchange.t_index = tokenExchangeCount;
+        exchange.t_howmuch = getResult;
+        tokenExchanges.push(exchange);
+        tokenExchangeCount++;
 
         // 계산된 토큰 양 만큼 전송 토큰 balances로 전송 !
-        token.GBU_Token_Transfer(msg.sender, HowMuchToken);
+        token.GBU_Token_Transfer(user, HowMuchToken);
 
+        _burn(user, _amount);
+    
     }
    
 
+   function getHowMuchToken() public view returns(uint256) {
+       return getResult;
+   }
 
 
+    // 사용자 포인트 요청 확인용 
+    function getTokenExchange(uint index) public view returns (uint256, uint256){
+    return (tokenExchanges[index].t_index, tokenExchanges[index].t_howmuch);
+    }
+
+
+
+   // tokenExchangeCount()
+    function getTokenExchangeCount() public view returns (uint256){
+        return tokenExchangeCount;
+    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
    // [ 포인트 , 토큰 잔액 조회 ] 

@@ -12,7 +12,6 @@ contract GBUPoint is ERC20 {
     address public tokenAddress; //토큰 컨트렉트 주소 
     GBUToken public token;
     address public user = 0xf8990788E46b5411281Ac51d6cb8E32F732d8DB0; // 사용자 변수 
-
     address[] public useraddress;  //사용자 지갑 주소들(포인트 받은 사용자)
     
     //사용자 정보 저장(지갑주소, 포인트)
@@ -61,7 +60,7 @@ contract GBUPoint is ERC20 {
         _;
     }
 
-  
+  //생성자
     constructor (address _GBUTokenAddress, uint _totalSupply) ERC20 (pointName, pointSymbol) {
         tokenAddress = _GBUTokenAddress;
         token = GBUToken(tokenAddress);
@@ -93,7 +92,6 @@ contract GBUPoint is ERC20 {
     }
 
 
-
      //GBU Point 전송 기능
       function transferPoint(address _to, uint256 _amount) public virtual  returns (bool) {
         _transfer(admin, _to, _amount);
@@ -103,17 +101,7 @@ contract GBUPoint is ERC20 {
         return true;
     }
 
-    // 사용자의 GBU Point 요청 기능
-    /* 사용자가 보상을 요청 --> 필요한 정보 입력 (주소)  --> 승인/거절 (관리자 입장) --> 전송하기*/
-    event RequestSubmitted(address requester);
-    event RequestApproved(address requester, uint amount);
-    event RequestRejected(address requester, string reason);
 
-    enum RequestStatus { None, Requested, RequestConfirmed , RequestApproved, RequestRejected }
-    RequestStatus public requestStatus; // 요청 상태
-    address public requester; // 요청자의 주소
- 
-  ////////////////////////////////////////////////////////////////////////////////////////////
   // [ 포인트 요청 기능 ] 
 
     // 사용자의 포인트 요청 기록 구조체 
@@ -151,44 +139,6 @@ contract GBUPoint is ERC20 {
     function getpointRequestCount() public view returns (uint256){
         return pointRequestCount;
     }
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    // 포인트 요청자 정보 확인하는 기능 
-   function getRequestInfo(uint256 _requestId) public view returns (Request memory) {
-    require(_requestId < requestId, "Invalid requestId"); // 요청 ID 유효성 검사
-
-    return requests[_requestId];
-}
-
-
-
-    // 사용자 pointRequest를 관리자가 승인하거나 거절한다. 
-    event RequestRejected(string message);
-    bool private AdminDecision; 
-    function approveRequest(uint _amount, bool _AdminDecision) public onlyAdmin {
-        // 관리자만 호출 가능
-        require(msg.sender == admin, "Only admin can approve requests"); 
-
-        AdminDecision = _AdminDecision;
-        
-        // 관리자가 승인을 하면 (true , false 입력한다) 요청상황 : 승인 (true)  ==> 포인트를 전송한다.
-        // 관리자가 승인을 거절하면 ==> 요청상황 : 거절 (false) 
-    
-        if (AdminDecision == false) {
-            requestStatus = RequestStatus.RequestRejected;
-            emit RequestRejected("Your request has been rejected by the admin.");
-        } else {
-            requestStatus = RequestStatus.RequestApproved;
-            transferPoint(requester, _amount);
-        }
-       
-    }
-  
-     
-    /* 승인된 경우 사용자들은 포인트를 얻게되고 그 포인트를 모은다. 
-    어느정도 모이면 토큰으로 전환할 수 있다. (1Point => Point * 10 Token)*/
 
    ////////////////////////////////////////////////////////////////////////////////////////////
    // [ 포인트 -> 토큰 전환 ] 

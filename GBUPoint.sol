@@ -41,10 +41,10 @@ contract GBUPoint is ERC20 {
 
         //가지고 있는 토큰만큼 반복
         for(uint256 i = 0; i < balanceLength; i++) {
-            address user =useraddress[i];
-            uint get_point= point_balances[user];
+            address users=useraddress[i];
+            uint get_point= point_balances[users];
     
-            userData[i] = UserData(user,  get_point);
+            userData[i] = UserData(users,  get_point);
         }
 
         return userData;
@@ -207,12 +207,24 @@ contract GBUPoint is ERC20 {
      uint public tokenExchangeCount = 0;
 
 
-    function exchangePointsForTokens(uint256 _amount) public {
-    
+    // Check-effects-interaction 패턴
+    bool private reentrancyLock = false;
+    modifier nonReentrancy() {
+        require(!reentrancyLock);
+        reentrancyLock = true;
+        _;
+        reentrancyLock = false;
+    }
 
+
+
+    function exchangePointsForTokens(uint256 _amount) public nonReentrancy() {
+    
+        
         // 포인트 * 10 환율
         HowMuchToken = _amount * 10; // 계산까지는 잘 됨 (해결)
         getResult = HowMuchToken;
+        
 
 
         Record_User_Token_Exchange memory exchange;
@@ -222,9 +234,10 @@ contract GBUPoint is ERC20 {
         tokenExchangeCount++;
 
         // 계산된 토큰 양 만큼 전송 토큰 balances로 전송 !
-        token.GBU_Token_Transfer(user, HowMuchToken);
+        token.GBU_Token_Transfer(user, getResult);
 
         _burn(user, _amount);
+    
     
     }
    
@@ -242,7 +255,7 @@ contract GBUPoint is ERC20 {
 
 
    // tokenExchangeCount()
-    function getTokenExchangeCount() public view returns (uint256){
+    function getTokenExchangeCount() public view returns (uint256) {
         return tokenExchangeCount;
     }
 
@@ -250,7 +263,7 @@ contract GBUPoint is ERC20 {
    // [ 포인트 , 토큰 잔액 조회 ] 
 
    // 관리자의 포인트 잔액 조회
-    function Point_Balance_Of_Admin() public view returns (uint256) {
+    function Point_Balance_Of_Admin() public onlyAdmin view returns (uint256) {
         return balanceOf(admin);
     }
 
@@ -263,8 +276,8 @@ contract GBUPoint is ERC20 {
 
 
    // 관리자의 토큰 잔액 조회
-    function Token_Balance_Of_Admin() public view returns (uint256) {
-    return token.balanceOf(admin);
+    function Token_Balance_Of_Admin() public onlyAdmin view returns (uint256) {
+        return token.balanceOf(admin);
     }
 
 

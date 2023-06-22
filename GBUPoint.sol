@@ -19,17 +19,6 @@ contract GBUPoint is ERC20 {
         address user;
         uint get_point;
     }
-
-    // 사용자의 요청 정보를 저장하기 위한 구조체
-    struct Request {
-    address requester;
-    bool approved;
-    }
-
-    //Request 구조체를 사용하여 요청 정보를 저장하기 위한 매핑 
-    mapping(uint256 => Request) public requests;
-    uint256 public requestId;
-    
     
   //모든 포인트 확인(관리자 전용)
     function getPoints_admin() view public returns (UserData[] memory) {

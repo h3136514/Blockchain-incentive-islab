@@ -27,4 +27,6 @@ admin.html 파일은 관리자의 웹페이지 파일로 관리자가 사용자�
 
 ## <흐름도>
 
+<img width="80%" src="https://github.com/h3136514/Blockchain-incentive-islab/assets/125268228/4eb44cdd-4793-4b07-b76c-e8a75ee118b3" />
+
 ## <스마트 컨트랙트 클래스다이어그램>

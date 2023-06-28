@@ -11,7 +11,6 @@ contract GBUPoint is ERC20 {
     address public admin; //관리자 변수 
     address public tokenAddress; //토큰 컨트렉트 주소 
     GBUToken public token;
-    address public user = 0xf8990788E46b5411281Ac51d6cb8E32F732d8DB0; // 사용자 변수 
     address[] public useraddress;  //사용자 지갑 주소들(포인트 받은 사용자)
     
     //사용자 정보 저장(지갑주소, 포인트)
@@ -173,9 +172,9 @@ contract GBUPoint is ERC20 {
         tokenExchangeCount++;
 
         // 계산된 토큰 양 만큼 전송 토큰 balances로 전송 !
-        token.GBU_Token_Transfer(user, getResult);
+        token.GBU_Token_Transfer(msg.sender, getResult);
 
-        _burn(user, _amount);
+        _burn(msg.sender, _amount);
     
     
     }
@@ -210,7 +209,7 @@ contract GBUPoint is ERC20 {
 
     // 사용자의 포인트 잔액 조회 
     function Point_Balance_Of_User() public view returns (uint256) {
-        return balanceOf(user);
+        return balanceOf(msg.sender);
     }
 
 
@@ -223,7 +222,7 @@ contract GBUPoint is ERC20 {
     
    // 사용자의 토큰 잔액 조회
     function Token_Balance_Of_User() public view returns (uint256) {
-        return token.balanceOf(user);
+        return token.balanceOf(msg.sender);
     }
 
 

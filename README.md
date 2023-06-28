@@ -31,3 +31,5 @@ admin.html 파일은 관리자의 웹페이지 파일로 관리자가 사용자�
 
 ## <스마트 컨트랙트 클래스다이어그램>
 <img width="80%" src="https://github.com/h3136514/Blockchain-incentive-islab/assets/125268228/69db59d9-260f-4c27-b90d-ab5412bc95bc" />
+<img width="80%" src="https://github.com/h3136514/Blockchain-incentive-islab/assets/125268228/7187869c-bf42-4f3e-bed0-863d91b68a0a" />
+

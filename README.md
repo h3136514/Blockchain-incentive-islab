@@ -23,7 +23,7 @@ admin.html 파일은 관리자의 웹페이지 파일로 관리자가 사용자�
 
 ## <구성도>
 
-  <img width="80%" src="https://github.com/h3136514/Blockchain-incentive-islab/files/11897370/default.pdf" />
+  <img width="80%" src="https://github.com/h3136514/Blockchain-incentive-islab/assets/125268228/e26fb54f-d7d4-4550-b18e-edf2175ca5c4" />
 
 ## <흐름도>
 

@@ -883,4 +883,4 @@ const abiobj = [
 ];
 
 var contractAddress_MATIC_MUMBAI = "";
-var contractAddress_ETH_Goerli = "0x891d76F69a7A2Fd878E52860B1B1B3524bA596a0"; // 포인트 컨트렉트 주소
+var contractAddress_ETH_Sepolia = "0x891d76F69a7A2Fd878E52860B1B1B3524bA596a0"; // 포인트 컨트렉트 주소

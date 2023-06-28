@@ -18,4 +18,4 @@ admin.html 파일은 관리자의 웹페이지 파일로 관리자가 사용자�
 
 
 ## <보안 검사>
-본 스마트 컨트랙트에 보안 취약점을 찾아내고 해결하기 위해서 Remix-IDE(Solidity Static Analysis Plugin)과 Slither를 사용해서 Solidity코드를 보다 안전하게 수정 및 개선했다.
+본 스마트 컨트랙트에 보안 취약점을 찾아내고 해결하기 위해서 Remix-IDE(Solidity Static Analysis Plugin)과 Slither 보안 툴을 사용해서 Solidity코드를 보다 안전하게 수정 및 개선했다.
